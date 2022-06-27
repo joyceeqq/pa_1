@@ -26,7 +26,12 @@ int execute(char **args)
     // DO NOT PRINT ANYTHING TO THE OUTPUT
 
     /***** BEGIN ANSWER HERE *****/
+    size_t size = SHELL_BUFFERSIZE;
+    char* line = (char*) malloc(sizeof(char) * size);
 
+    while (getline(&line, &size, fp) != -1) {
+        number_of_lines++;
+    }
     /*********************/
     fclose(fp); // close file.
     printf("%d \t %s \n", number_of_lines, args[1]);
