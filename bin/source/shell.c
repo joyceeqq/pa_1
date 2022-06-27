@@ -156,7 +156,7 @@ int process_command(char **args)
 {
   int child_exit_status = -1;
   /** TASK 3 **/
-
+  
   // 1. Check if args[0] is NULL. If it is, an empty command is entered, return 1
   // 2. Otherwise, check if args[0] is in any of our builtin_commands: cd, help, exit, or usage.
   // 3. If conditions in (2) are satisfied, call builtin shell commands, otherwise perform fork() to exec the system program. Check if fork() is successful.
@@ -165,7 +165,28 @@ int process_command(char **args)
   // DO NOT PRINT ANYTHING TO THE OUTPUT
 
   /***** BEGIN ANSWER HERE *****/
+  if (args[0] == NULL){ // Check if args[0] is NULL
+    return 1;
+  }
+  for(int i = 0; i<num_builtin_functions(); i++){
+    if(strcmp(args[0],builtin_commands[i])==0){
+      return builtin_command_func[i](args);
+    }
+  }
 
+  int pid = fork();
+  if(pid == 0){
+    int exec_status = exec_sys_prog(args);
+    if(exec_status ==-1)
+      exit(1); //terminate process properly
+  }
+  else if (pid > 0){
+    int status;
+    waitpid(pid, &status, WUNTRACED);     
+    if (WIFEXITED(status)){
+      child_exit_status = WEXITSTATUS(status);
+    }
+  }
   /*********************/
   if (child_exit_status != 1)
   {
@@ -301,15 +322,27 @@ void main_loop(void)
 
 int main(int argc, char **argv)
 {
- 
- printf("Shell Run successful. Running now: \n");
- 
- char* line = read_line_stdin();
- printf("The fetched line is : %s \n", line);
- 
- char** args = tokenize_line_stdin(line);
- printf("The first token is %s \n", args[0]);
- printf("The second token is %s \n", args[1]);
- 
- return 0;
+
+  printf("Shell Run successful. Running now: \n");
+
+  char *line = read_line_stdin();
+  printf("The fetched line is : %s \n", line);
+
+  char **args = tokenize_line_stdin(line);
+  printf("The first token is %s \n", args[0]);
+  printf("The second token is %s \n", args[1]);
+
+  // Setup path
+  if (getcwd(output_file_path, sizeof(output_file_path)) != NULL)
+  {
+    printf("Current working dir: %s\n", output_file_path);
+  }
+  else
+  {
+    perror("getcwd() error, exiting now.");
+    return 1;
+  }
+  process_command(args);
+
+  return 0;
 }
