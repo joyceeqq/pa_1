@@ -28,7 +28,18 @@ int execute()
    // DO NOT PRINT ANYTHING TO THE OUTPUT
 
    /***** BEGIN ANSWER HERE *****/
+   fptr = fopen("output.txt", "r");
+   if (!fptr)
+   {
+      printf("File cannot be found.\n");
+      return 1;
+   }
+   size_t size = SHELL_BUFFERSIZE;
+   char* line = (char*) malloc(sizeof(char) * size);
 
+   while (getline(&line, &size, fptr) != -1) {
+      live_daemons++;
+   }
    /*********************/
    if (live_daemons == 0)
       printf("No daemon is alive right now.\n");
